@@ -1,0 +1,262 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum Category {
+  MEN
+  WOMEN
+  KIDS
+  UNISEX
+}
+
+enum FabricType {
+  COTTON
+  LINEN
+  SILK
+  WOOL
+  POLYESTER
+  BLENDED
+}
+
+enum Pattern {
+  SOLID
+  PRINTED
+  EMBROIDERED
+  STRIPED
+  CHECKS
+  FLORAL
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CARD
+  UPI
+  COD
+  NETBANKING
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  phone         String?
+  role          UserRole  @default(CUSTOMER)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
+
+  @@map("users")
+}
+
+model Address {
+  id                 String   @id @default(cuid())
+  userId             String
+  fullName           String
+  phone              String
+  addressLine1       String
+  addressLine2       String?
+  city               String
+  state              String
+  postalCode         String
+  country            String   @default("India")
+  isDefaultShipping  Boolean  @default(false)
+  isDefaultBilling   Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String      @db.Text
+  category    Category
+  fabricType  FabricType
+  pattern     Pattern
+  color       String
+  price       Int         // Stored in paise (smallest unit)
+  comparePrice Int?       // Original price if on sale
+  stock       Int         @default(0)
+  isActive    Boolean     @default(true)
+  isFeatured  Boolean     @default(false)
+  tags        String[]    @default([])
+  metaTitle   String?
+  metaDescription String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  images      ProductImage[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+
+  @@index([category])
+  @@index([slug])
+  @@index([isFeatured])
+  @@map("products")
+}
+
+model ProductImage {
+  id          String   @id @default(cuid())
+  productId   String
+  url         String
+  altText     String?
+  isPrimary   Boolean  @default(false)
+  displayOrder Int     @default(0)
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model Order {
+  id                String        @id @default(cuid())
+  orderNumber       String        @unique
+  userId            String?       // Optional for guest checkout
+  status            OrderStatus   @default(PENDING)
+  paymentStatus     PaymentStatus @default(PENDING)
+  paymentMethod     PaymentMethod
+  subtotal          Int           // In paise
+  shippingCost      Int           // In paise
+  tax               Int           // In paise
+  total             Int           // In paise
+  stripeSessionId   String?
+  stripePaymentIntentId String?
+  
+  // Guest customer info
+  customerEmail     String
+  customerName      String
+  customerPhone     String
+  
+  // Shipping address (inline for guest checkout)
+  shippingAddressLine1 String
+  shippingAddressLine2 String?
+  shippingCity         String
+  shippingState        String
+  shippingPostalCode   String
+  shippingCountry      String @default("India")
+  
+  // Billing address (inline for guest checkout)
+  billingAddressLine1 String
+  billingAddressLine2 String?
+  billingCity         String
+  billingState        String
+  billingPostalCode   String
+  billingCountry      String @default("India")
+  
+  notes             String?
+  trackingNumber    String?
+  shippedAt         DateTime?
+  deliveredAt       DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user              User?          @relation(fields: [userId], references: [id])
+  items             OrderItem[]
+
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([customerEmail])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  productId       String
+  productName     String   // Snapshot
+  productSlug     String   // Snapshot
+  productImage    String?  // Snapshot
+  price           Int      // Snapshot in paise
+  quantity        Int
+  createdAt       DateTime @default(now())
+
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  rating      Int      // 1-5
+  title       String?
+  comment     String   @db.Text
+  isVerified  Boolean  @default(false) // Purchased product
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@map("reviews")
+}
+
+model NewsletterSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  isActive    Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  unsubscribeToken String? @unique
+
+  @@map("newsletter_subscribers")
+}
+
+model ContactMessage {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String
+  message     String   @db.Text
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@map("contact_messages")
+}
