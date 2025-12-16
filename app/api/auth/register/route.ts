@@ -3,6 +3,7 @@ import { hash } from 'bcrypt';
 import { prisma } from '@/lib/prisma';
 import { registerSchema } from '@/lib/validations';
 import { UserRole } from '@prisma/client';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -40,6 +41,11 @@ export async function POST(request: Request) {
         role: true,
         createdAt: true,
       },
+    });
+
+    // Send welcome email (don't block on this)
+    sendWelcomeEmail(email, name).catch((error) => {
+      console.error('Failed to send welcome email:', error);
     });
 
     return NextResponse.json(
