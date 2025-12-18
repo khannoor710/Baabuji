@@ -41,6 +41,7 @@ export function Header() {
                 onClick={openCart}
                 className="relative text-gray-700 hover:text-primary-700 transition-colors p-2 hover:bg-gray-100 rounded-full"
                 aria-label="Open shopping cart"
+                data-testid="cart-icon"
               >
                 <svg
                   className="w-6 h-6"

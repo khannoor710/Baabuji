@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { registerSchema } from '@/lib/validations';
 import { UserRole } from '@prisma/client';
 import { sendWelcomeEmail } from '@/lib/email';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 
     // Send welcome email (don't block on this)
     sendWelcomeEmail(email, name).catch((error) => {
-      console.error('Failed to send welcome email:', error);
+      logger.error('Failed to send welcome email', error, { email });
     });
 
     return NextResponse.json(

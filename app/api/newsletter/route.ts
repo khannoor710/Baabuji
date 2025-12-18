@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { logger } from '@/lib/logger';
 
 const subscribeSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -48,7 +49,6 @@ export async function POST(request: Request) {
     await prisma.newsletterSubscriber.create({
       data: {
         email,
-        name: name || null,
         unsubscribeToken,
       },
     });
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error('Newsletter subscription error:', error);
+    logger.error('Newsletter subscription error', error, { endpoint: '/api/newsletter' });
     return NextResponse.json(
       { error: 'Failed to subscribe. Please try again.' },
       { status: 500 }
@@ -113,7 +113,7 @@ export async function GET(request: Request) {
       message: 'You have been unsubscribed from our newsletter.',
     });
   } catch (error) {
-    console.error('Newsletter unsubscribe error:', error);
+    logger.error('Newsletter subscription error', error);
     return NextResponse.json(
       { error: 'Failed to unsubscribe. Please try again.' },
       { status: 500 }

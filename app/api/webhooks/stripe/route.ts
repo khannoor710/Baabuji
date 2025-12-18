@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { constructWebhookEvent } from '@/lib/stripe';
 import { PaymentStatus, OrderStatus } from '@prisma/client';
 import { sendOrderConfirmation } from '@/lib/email';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/webhooks/stripe
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
         const orderId = session.metadata?.orderId;
         
         if (!orderId) {
-          console.error('No orderId in session metadata');
+          logger.error('No orderId in session metadata', undefined, { sessionId: session.id });
           return NextResponse.json({ received: true });
         }
 
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
             name: item.productName,
             quantity: item.quantity,
             price: item.price,
-            image: item.productImage,
+            image: item.productImage || undefined,
           })),
           subtotal: order.subtotal,
           shipping: order.shippingCost,
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
           },
         });
 
-        console.log(`✅ Payment completed for order ${order.orderNumber}`);
+        logger.payment('Payment completed', order.id, { orderNumber: order.orderNumber });
         break;
       }
 
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
             },
           });
 
-          console.log(`✅ Payment intent succeeded for order ${orderId}`);
+          logger.payment('Payment intent succeeded', orderId, { orderId });
         }
         break;
       }
@@ -131,18 +132,18 @@ export async function POST(request: Request) {
             });
           }
 
-          console.log(`❌ Payment failed for order ${order.orderNumber}. Stock restored.`);
+          logger.payment('Payment failed - stock restored', order.id, { orderNumber: order.orderNumber });
         }
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.warn('Unhandled webhook event type', { eventType: event.type });
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    logger.error('Webhook handler failed', error);
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 400 }

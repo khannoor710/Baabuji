@@ -6,10 +6,10 @@ if (!process.env.STRIPE_SECRET_KEY) {
 
 /**
  * Stripe client instance
- * Configured for API version 2023-10-16
+ * Configured for API version 2024-04-10
  */
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2024-04-10',
   typescript: true,
 });
 

@@ -28,7 +28,11 @@ export function ProductCard({
   const discount = comparePrice ? calculateDiscountPercentage(comparePrice, price) : 0;
 
   return (
-    <Link href={`/product/${slug}`} className="card group cursor-pointer hover:shadow-xl transition-shadow">
+    <Link 
+      href={`/product/${slug}`} 
+      className="card group cursor-pointer hover:shadow-xl transition-shadow"
+      data-testid="product-card"
+    >
       <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
         <Image
           src={image}
@@ -51,7 +55,7 @@ export function ProductCard({
         <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{category}</p>
         <h3 className="font-serif text-lg font-semibold mb-2 line-clamp-2">{name}</h3>
         <div className="flex items-center gap-2">
-          <span className="text-primary-900 font-bold text-lg">{formatPrice(price)}</span>
+          <span className="text-primary-900 font-bold text-lg" data-testid="product-price">{formatPrice(price)}</span>
           {comparePrice && (
             <span className="text-gray-400 line-through text-sm">{formatPrice(comparePrice)}</span>
           )}

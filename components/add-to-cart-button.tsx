@@ -76,6 +76,7 @@ export function AddToCartButton({
       disabled={stock === 0 || isAdding}
       onClick={handleAddToCart}
       isLoading={isAdding}
+      data-testid="add-to-cart-btn"
     >
       {showSuccess ? (
         <>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { UserRole, Category, FabricType, Pattern } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 // GET - Fetch single product
 export async function GET(
@@ -28,7 +29,7 @@ export async function GET(
 
     return NextResponse.json({ product });
   } catch (error) {
-    console.error('Error fetching product:', error);
+    logger.error('Error fetching product', error);
     return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 });
   }
 }
@@ -121,7 +122,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, product });
   } catch (error) {
-    console.error('Error updating product:', error);
+    logger.error('Error updating product', error);
     return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
   }
 }
@@ -165,7 +166,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Product deleted successfully' });
   } catch (error) {
-    console.error('Error deleting product:', error);
+    logger.error('Error deleting product', error);
     return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
   }
 }

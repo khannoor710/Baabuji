@@ -9,7 +9,10 @@ export function CartBadge() {
   if (totalItems === 0) return null;
 
   return (
-    <span className="absolute -top-2 -right-2 bg-accent-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md animate-in fade-in zoom-in duration-200">
+    <span 
+      className="absolute -top-2 -right-2 bg-accent-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md animate-in fade-in zoom-in duration-200"
+      data-testid="cart-badge"
+    >
       {totalItems > 99 ? '99+' : totalItems}
     </span>
   );

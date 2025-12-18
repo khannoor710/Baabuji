@@ -58,7 +58,7 @@ export default async function AdminOrdersPage() {
           </div>
 
           {/* Orders Table */}
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden" data-testid="orders-table">
             <AdminOrdersTable orders={orders} />
           </div>
         </div>

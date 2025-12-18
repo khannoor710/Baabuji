@@ -78,7 +78,6 @@ export default function CheckoutPage() {
       // Redirect to order confirmation
       router.push(`/order-confirmation/${orderId}`);
     } catch (error) {
-      console.error('Checkout error:', error);
       alert(error instanceof Error ? error.message : 'An error occurred during checkout');
       throw error;
     }

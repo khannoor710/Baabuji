@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { UserRole, OrderStatus, PaymentStatus } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 // PATCH - Update order status
 export async function PATCH(
@@ -80,7 +81,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, order });
   } catch (error) {
-    console.error('Error updating order:', error);
+    logger.error('Error updating order', error);
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
   }
 }

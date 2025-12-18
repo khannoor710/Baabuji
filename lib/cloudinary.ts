@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { logger } from '@/lib/logger';
 
 // Configure Cloudinary
 if (process.env.CLOUDINARY_URL) {
@@ -9,7 +10,7 @@ if (process.env.CLOUDINARY_URL) {
     secure: true,
   });
 } else {
-  console.warn('Cloudinary not configured. Image uploads will not work.');
+  logger.warn('Cloudinary not configured. Image uploads will not work.');
 }
 
 /**
@@ -44,7 +45,7 @@ export async function uploadImage(
       publicId: result.public_id,
     };
   } catch (error) {
-    console.error('Cloudinary upload error:', error);
+    logger.error('Cloudinary upload failed', error, { folder });
     throw new Error('Failed to upload image');
   }
 }
@@ -61,7 +62,7 @@ export async function deleteImage(publicId: string): Promise<void> {
   try {
     await cloudinary.uploader.destroy(publicId);
   } catch (error) {
-    console.error('Cloudinary delete error:', error);
+    logger.error('Cloudinary delete failed', error, { publicId });
     throw new Error('Failed to delete image');
   }
 }

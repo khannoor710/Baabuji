@@ -4,9 +4,10 @@ import { OrderShippedEmail } from '@/emails/order-shipped';
 import { OrderDeliveredEmail } from '@/emails/order-delivered';
 import { WelcomeEmail } from '@/emails/welcome';
 import { NewsletterEmail } from '@/emails/newsletter';
+import { logger } from '@/lib/logger';
 
 if (!process.env.RESEND_API_KEY) {
-  console.warn('RESEND_API_KEY is not defined. Email functionality will be disabled.');
+  logger.warn('RESEND_API_KEY is not defined. Email functionality will be disabled.');
 }
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -46,7 +47,7 @@ export interface OrderEmailData {
  */
 export async function sendOrderConfirmation(data: OrderEmailData) {
   if (!resend) {
-    console.warn('Resend not configured. Skipping order confirmation email.');
+    logger.warn('Resend not configured. Skipping order confirmation email.');
     return { success: false, error: 'Email service not configured' };
   }
 
@@ -58,9 +59,10 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
       react: OrderConfirmationEmail(data),
     });
 
+    logger.email('Order confirmation sent', data.customerEmail, { orderNumber: data.orderNumber });
     return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to send order confirmation email:', error);
+    logger.error('Failed to send order confirmation email', error, { orderNumber: data.orderNumber });
     return { success: false, error };
   }
 }
@@ -70,7 +72,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
  */
 export async function sendOrderShipped(data: OrderEmailData) {
   if (!resend) {
-    console.warn('Resend not configured. Skipping order shipped email.');
+    logger.warn('Resend not configured. Skipping order shipped email.');
     return { success: false, error: 'Email service not configured' };
   }
 
@@ -82,9 +84,10 @@ export async function sendOrderShipped(data: OrderEmailData) {
       react: OrderShippedEmail(data),
     });
 
+    logger.email('Order shipped notification sent', data.customerEmail, { orderNumber: data.orderNumber });
     return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to send order shipped email:', error);
+    logger.error('Failed to send order shipped email', error, { orderNumber: data.orderNumber });
     return { success: false, error };
   }
 }
@@ -94,7 +97,7 @@ export async function sendOrderShipped(data: OrderEmailData) {
  */
 export async function sendOrderDelivered(data: OrderEmailData) {
   if (!resend) {
-    console.warn('Resend not configured. Skipping order delivered email.');
+    logger.warn('Resend not configured. Skipping order delivered email.');
     return { success: false, error: 'Email service not configured' };
   }
 
@@ -106,9 +109,10 @@ export async function sendOrderDelivered(data: OrderEmailData) {
       react: OrderDeliveredEmail(data),
     });
 
+    logger.email('Order delivered notification sent', data.customerEmail, { orderNumber: data.orderNumber });
     return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to send order delivered email:', error);
+    logger.error('Failed to send order delivered email', error, { orderNumber: data.orderNumber });
     return { success: false, error };
   }
 }
@@ -118,7 +122,7 @@ export async function sendOrderDelivered(data: OrderEmailData) {
  */
 export async function sendWelcomeEmail(email: string, name: string) {
   if (!resend) {
-    console.warn('Resend not configured. Skipping welcome email.');
+    logger.warn('Resend not configured. Skipping welcome email.');
     return { success: false, error: 'Email service not configured' };
   }
 
@@ -130,9 +134,10 @@ export async function sendWelcomeEmail(email: string, name: string) {
       react: WelcomeEmail({ name, email }),
     });
 
+    logger.email('Welcome email sent', email, { name });
     return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to send welcome email:', error);
+    logger.error('Failed to send welcome email', error, { email });
     return { success: false, error };
   }
 }
@@ -147,7 +152,7 @@ export async function sendNewsletterEmail(
   unsubscribeToken: string
 ) {
   if (!resend) {
-    console.warn('Resend not configured. Skipping newsletter email.');
+    logger.warn('Resend not configured. Skipping newsletter email.');
     return { success: false, error: 'Email service not configured' };
   }
 
@@ -159,9 +164,10 @@ export async function sendNewsletterEmail(
       react: NewsletterEmail({ content, unsubscribeToken }),
     });
 
+    logger.email('Newsletter sent', email, { subject });
     return { success: true, data: result };
   } catch (error) {
-    console.error('Failed to send newsletter email:', error);
+    logger.error('Failed to send newsletter email', error, { email, subject });
     return { success: false, error };
   }
 }
@@ -175,7 +181,7 @@ export async function sendNewsletterBatch(
   content: string
 ) {
   if (!resend) {
-    console.warn('Resend not configured. Skipping newsletter batch.');
+    logger.warn('Resend not configured. Skipping newsletter batch.');
     return { success: false, error: 'Email service not configured' };
   }
 

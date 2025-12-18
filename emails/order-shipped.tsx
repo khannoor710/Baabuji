@@ -52,7 +52,7 @@ export function OrderShippedEmail({
             {trackingNumber && (
               <Section style={trackingBox}>
                 <Text style={label}>Tracking Number</Text>
-                <Text style={trackingNumber}>{trackingNumber}</Text>
+                <Text style={trackingText}>{trackingNumber}</Text>
               </Section>
             )}
 
@@ -142,7 +142,7 @@ const label = {
   margin: '0 0 5px 0',
 };
 
-const trackingNumber = {
+const trackingText = {
   color: '#5c2e1f',
   fontSize: '20px',
   fontWeight: 'bold',

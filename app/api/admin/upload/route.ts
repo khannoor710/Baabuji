@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/admin/upload
@@ -10,7 +10,7 @@ import { uploadImage } from '@/lib/cloudinary';
 export async function POST(request: Request) {
   try {
     // Check authentication and authorization
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       message: 'Image uploaded successfully',
     });
   } catch (error) {
-    console.error('Image upload error:', error);
+    logger.error('Image upload error', error);
     
     if (error instanceof Error) {
       return NextResponse.json(

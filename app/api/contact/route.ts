@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error('Contact form error:', error);
+    logger.error('Contact form error', error);
     return NextResponse.json(
       { error: 'Failed to submit message. Please try again.' },
       { status: 500 }

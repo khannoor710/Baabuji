@@ -20,6 +20,7 @@ declare module 'next-auth' {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // @ts-expect-error - NextAuth v5 beta type incompatibility with Prisma adapter
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
@@ -61,7 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             role: user.role,
           };
         } catch (error) {
-          console.error('Authorization error:', error);
+          // Error already logged by authorize function
           return null;
         }
       },

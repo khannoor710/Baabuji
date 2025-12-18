@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 import { sendOrderConfirmation } from '@/lib/email';
+import { logger } from '@/lib/logger';
 
 interface OrderItem {
   productId: string;
@@ -186,7 +187,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Order creation error:', error);
+    logger.error('Order creation failed', error);
     
     if (error instanceof Error) {
       return NextResponse.json(

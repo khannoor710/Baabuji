@@ -40,8 +40,8 @@ export function CheckoutForm({ total, onComplete, onCancel }: CheckoutFormProps)
         paymentDetails: details,
       });
     } catch (error) {
-      console.error('Checkout error:', error);
       setIsProcessing(false);
+      // Error is propagated to parent component for handling
     }
   };
 

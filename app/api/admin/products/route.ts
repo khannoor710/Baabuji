@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { UserRole, Category, FabricType, Pattern } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: Request) {
   try {
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, product }, { status: 201 });
   } catch (error) {
-    console.error('Error creating product:', error);
+    logger.error('Error creating product', error);
     return NextResponse.json(
       { error: 'Failed to create product' },
       { status: 500 }

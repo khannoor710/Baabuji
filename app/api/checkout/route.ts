@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createCheckoutSession } from '@/lib/stripe';
-import { OrderStatus, PaymentStatus } from '@prisma/client';
+import { OrderStatus, PaymentStatus, PaymentMethod } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 interface OrderItem {
   productId: string;
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
           tax,
           total,
 
-          paymentMethod: paymentMethod.toUpperCase(),
+          paymentMethod: paymentMethod.toUpperCase() as PaymentMethod,
           paymentStatus: PaymentStatus.PENDING, // Will be updated by webhook
           status: OrderStatus.PENDING,
 
@@ -190,7 +191,7 @@ export async function POST(request: Request) {
       orderNumber: order.orderNumber,
     });
   } catch (error) {
-    console.error('Checkout error:', error);
+    logger.error('Checkout error', error);
     
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

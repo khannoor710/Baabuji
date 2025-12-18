@@ -107,7 +107,7 @@ export default function CartPage() {
 
               {/* Order Summary */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg shadow-sm sticky top-24">
+                <div className="bg-white rounded-lg shadow-sm sticky top-24" data-testid="order-summary">
                   <div className="px-6 py-4 border-b border-gray-200">
                     <h2 className="font-semibold text-gray-900">Order Summary</h2>
                   </div>
@@ -116,13 +116,13 @@ export default function CartPage() {
                     {/* Subtotal */}
                     <div className="flex justify-between text-gray-700">
                       <span>Subtotal ({totalItems} items)</span>
-                      <span className="font-medium">{formatPrice(subtotal)}</span>
+                      <span className="font-medium" data-testid="subtotal">{formatPrice(subtotal)}</span>
                     </div>
 
                     {/* Shipping */}
                     <div className="flex justify-between text-gray-700">
                       <span>Shipping</span>
-                      <span className="font-medium">
+                      <span className="font-medium" data-testid="shipping">
                         {shipping === 0 ? (
                           <span className="text-green-600">FREE</span>
                         ) : (
@@ -157,7 +157,7 @@ export default function CartPage() {
                           ⓘ
                         </button>
                       </span>
-                      <span className="font-medium">{formatPrice(tax)}</span>
+                      <span className="font-medium" data-testid="tax">{formatPrice(tax)}</span>
                     </div>
 
                     {/* Divider */}
@@ -166,7 +166,7 @@ export default function CartPage() {
                     {/* Total */}
                     <div className="flex justify-between text-lg font-bold text-gray-900">
                       <span>Total</span>
-                      <span className="text-primary-900">{formatPrice(total)}</span>
+                      <span className="text-primary-900" data-testid="total">{formatPrice(total)}</span>
                     </div>
 
                     {/* Checkout Button */}

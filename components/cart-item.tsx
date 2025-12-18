@@ -37,7 +37,7 @@ export function CartItem({ item, variant = 'drawer' }: CartItemProps) {
 
   if (variant === 'drawer') {
     return (
-      <div className="flex gap-4 py-4 border-b border-gray-200">
+      <div className="flex gap-4 py-4 border-b border-gray-200" data-testid="cart-item">
         {/* Product Image */}
         <Link href={`/product/${item.slug}`} className="flex-shrink-0">
           <div className="relative w-20 h-24 rounded-md overflow-hidden bg-gray-100">
@@ -99,6 +99,7 @@ export function CartItem({ item, variant = 'drawer' }: CartItemProps) {
               disabled={isUpdating || item.quantity <= 1}
               className="px-2 py-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               aria-label="Decrease quantity"
+              data-testid="decrease-quantity"
             >
               −
             </button>
@@ -110,6 +111,7 @@ export function CartItem({ item, variant = 'drawer' }: CartItemProps) {
               disabled={isUpdating || item.quantity >= item.stock}
               className="px-2 py-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               aria-label="Increase quantity"
+              data-testid="increase-quantity"
             >
               +
             </button>
