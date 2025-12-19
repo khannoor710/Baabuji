@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { sendAdminContactNotification } from '@/lib/email';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -29,7 +30,15 @@ export async function POST(request: Request) {
       },
     });
 
-    // TODO: Send notification email to admin
+    // Send notification email to admin (non-blocking)
+    sendAdminContactNotification({
+      name,
+      email,
+      subject,
+      message,
+    }).catch((error) => {
+      logger.error('Failed to send admin contact notification', error);
+    });
 
     return NextResponse.json(
       {

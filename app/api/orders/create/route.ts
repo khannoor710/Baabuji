@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
-import { sendOrderConfirmation } from '@/lib/email';
+import { sendOrderConfirmation, sendAdminOrderNotification } from '@/lib/email';
 import { logger } from '@/lib/logger';
 
 interface OrderItem {
@@ -147,34 +147,44 @@ export async function POST(request: Request) {
       return order;
     });
 
+    // Prepare order email data
+    const orderEmailData = {
+      orderNumber: result.orderNumber,
+      customerName: result.customerName,
+      customerEmail: result.customerEmail,
+      orderDate: result.createdAt,
+      items: result.items.map((item) => ({
+        name: item.productName,
+        quantity: item.quantity,
+        price: item.price,
+        image: item.productImage || undefined,
+      })),
+      subtotal: result.subtotal,
+      shipping: result.shippingCost,
+      tax: result.tax,
+      total: result.total,
+      shippingAddress: {
+        fullName: result.customerName,
+        addressLine1: result.shippingAddressLine1,
+        addressLine2: result.shippingAddressLine2 || undefined,
+        city: result.shippingCity,
+        state: result.shippingState,
+        postalCode: result.shippingPostalCode,
+        country: result.shippingCountry,
+      },
+    };
+
     // Send order confirmation email for COD orders
     if (paymentMethod === 'cod') {
-      await sendOrderConfirmation({
-        orderNumber: result.orderNumber,
-        customerName: result.customerName,
-        customerEmail: result.customerEmail,
-        orderDate: result.createdAt,
-        items: result.items.map((item) => ({
-          name: item.productName,
-          quantity: item.quantity,
-          price: item.price,
-          image: item.productImage || undefined,
-        })),
-        subtotal: result.subtotal,
-        shipping: result.shippingCost,
-        tax: result.tax,
-        total: result.total,
-        shippingAddress: {
-          fullName: result.customerName,
-          addressLine1: result.shippingAddressLine1,
-          addressLine2: result.shippingAddressLine2 || undefined,
-          city: result.shippingCity,
-          state: result.shippingState,
-          postalCode: result.shippingPostalCode,
-          country: result.shippingCountry,
-        },
+      sendOrderConfirmation(orderEmailData).catch((error) => {
+        logger.error('Failed to send COD order confirmation', error);
       });
     }
+
+    // Send admin notification for all orders (non-blocking)
+    sendAdminOrderNotification(orderEmailData).catch((error) => {
+      logger.error('Failed to send admin order notification', error);
+    });
 
     // Return success response
     return NextResponse.json(

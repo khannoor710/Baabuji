@@ -201,3 +201,100 @@ export async function sendNewsletterBatch(
     failed,
   };
 }
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(email: string, name: string, resetLink: string) {
+  if (!resend) {
+    logger.warn('Resend not configured. Skipping password reset email.');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const { PasswordResetEmail } = await import('@/emails/password-reset');
+    
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Reset Your Password - Baabuji',
+      react: PasswordResetEmail({ name, resetLink }),
+    });
+
+    logger.email('Password reset email sent', email);
+    return { success: true, data: result };
+  } catch (error) {
+    logger.error('Failed to send password reset email', error, { email });
+    return { success: false, error };
+  }
+}
+
+/**
+ * Send admin notification for new order
+ */
+export async function sendAdminOrderNotification(orderData: OrderEmailData) {
+  if (!resend) {
+    logger.warn('Resend not configured. Skipping admin order notification.');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@baabuji.com';
+
+  try {
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: adminEmail,
+      subject: `New Order Received - ${orderData.orderNumber}`,
+      react: OrderConfirmationEmail(orderData),
+    });
+
+    logger.email('Admin order notification sent', adminEmail, { orderNumber: orderData.orderNumber });
+    return { success: true, data: result };
+  } catch (error) {
+    logger.error('Failed to send admin order notification', error, { orderNumber: orderData.orderNumber });
+    return { success: false, error };
+  }
+}
+
+/**
+ * Send admin notification for contact form submission
+ */
+export async function sendAdminContactNotification(contactData: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  if (!resend) {
+    logger.warn('Resend not configured. Skipping admin contact notification.');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@baabuji.com';
+
+  try {
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: adminEmail,
+      subject: `New Contact Form Submission: ${contactData.subject}`,
+      html: `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>From:</strong> ${contactData.name} (${contactData.email})</p>
+        <p><strong>Subject:</strong> ${contactData.subject}</p>
+        <p><strong>Message:</strong></p>
+        <p>${contactData.message.replace(/\n/g, '<br>')}</p>
+        <hr>
+        <p style="font-size: 12px; color: #666;">
+          Reply directly to this email to respond to the customer.
+        </p>
+      `,
+      reply_to: contactData.email,
+    });
+
+    logger.email('Admin contact notification sent', adminEmail, { from: contactData.email });
+    return { success: true, data: result };
+  } catch (error) {
+    logger.error('Failed to send admin contact notification', error, { from: contactData.email });
+    return { success: false, error };
+  }
+}
