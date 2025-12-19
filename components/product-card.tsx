@@ -1,3 +1,4 @@
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatPrice, calculateDiscountPercentage } from '@/lib/utils';
@@ -38,7 +39,9 @@ export function ProductCard({
           src={image}
           alt={imageAlt}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
         />
         {discount > 0 && (
           <div className="absolute top-2 right-2 bg-accent-500 text-white px-2 py-1 rounded-md text-sm font-bold">
@@ -64,3 +67,6 @@ export function ProductCard({
     </Link>
   );
 }
+
+// Memoize to prevent unnecessary re-renders in product grids
+export default React.memo(ProductCard);

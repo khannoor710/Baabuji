@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Enable ISR - revalidate every 30 minutes for shop listings
+export const revalidate = 1800;
+
 interface SearchParams {
   category?: Category;
   fabricType?: FabricType;

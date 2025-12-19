@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 
 interface ReviewFormProps {
   productId: string;
+  productName: string;
   onSuccess?: () => void;
 }
 
-export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
+export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProps) {
   const { data: session } = useSession();
   const router = useRouter();
   
@@ -22,13 +23,14 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [hoveredRating, setHoveredRating] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (!session) {
-      router.push('/auth/login?callbackUrl=' + window.location.pathname);
+      router.push('/auth/login?callbackUrl=' + encodeURIComponent(window.location.pathname));
       return;
     }
 
@@ -49,17 +51,19 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Failed to submit review');
-        return;
+        throw new Error(data.error || 'Failed to submit review');
       }
 
       setSuccess(true);
       setFormData({ rating: 5, title: '', comment: '' });
-      onSuccess?.();
-
-      setTimeout(() => setSuccess(false), 5000);
-    } catch {
-      setError('An error occurred. Please try again.');
+      
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -67,9 +71,9 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
 
   if (!session) {
     return (
-      <div className="text-center py-8 bg-gray-50 rounded-lg">
-        <p className="text-gray-600 mb-4">Please log in to write a review</p>
-        <Button onClick={() => router.push('/auth/login?callbackUrl=' + window.location.pathname)}>
+      <div className="bg-gray-50 rounded-lg p-8 text-center">
+        <p className="text-gray-600 mb-4">Please sign in to write a review</p>
+        <Button onClick={() => router.push('/auth/login?callbackUrl=' + encodeURIComponent(window.location.pathname))}>
           Sign In
         </Button>
       </div>
@@ -78,82 +82,96 @@ export function ReviewForm({ productId, onSuccess }: ReviewFormProps) {
 
   if (success) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-          <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+      <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-3xl"></span>
         </div>
-        <h3 className="font-semibold text-lg text-gray-900 mb-2">Thank You!</h3>
-        <p className="text-gray-600">Your review has been submitted successfully.</p>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Review Submitted!</h3>
+        <p className="text-gray-600">Thank you for your feedback on {productName}</p>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Rating */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-        <div className="flex gap-2">
-          {[1, 2, 3, 4, 5].map((star) => (
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Your Rating *
+        </label>
+        <div className="flex items-center gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
             <button
-              key={star}
+              key={i}
               type="button"
-              onClick={() => setFormData({ ...formData, rating: star })}
-              className="text-3xl focus:outline-none transition-colors"
+              onClick={() => setFormData({ ...formData, rating: i + 1 })}
+              onMouseEnter={() => setHoveredRating(i + 1)}
+              onMouseLeave={() => setHoveredRating(0)}
+              className="text-4xl transition-colors focus:outline-none"
             >
-              {star <= formData.rating ? (
-                <span className="text-yellow-400"></span>
-              ) : (
-                <span className="text-gray-300"></span>
-              )}
+              <span
+                className={
+                  i < (hoveredRating || formData.rating)
+                    ? 'text-yellow-400'
+                    : 'text-gray-300'
+                }
+              >
+                
+              </span>
             </button>
           ))}
+          <span className="ml-2 text-sm text-gray-600">
+            {formData.rating} {formData.rating === 1 ? 'star' : 'stars'}
+          </span>
         </div>
       </div>
 
+      {/* Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="review-title" className="block text-sm font-medium text-gray-700 mb-2">
           Review Title (Optional)
         </label>
         <input
+          id="review-title"
           type="text"
-          id="title"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Sum up your review in a few words"
+          placeholder="Summarize your experience"
+          className="input"
           maxLength={100}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          disabled={isLoading}
         />
       </div>
 
+      {/* Comment */}
       <div>
-        <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="review-comment" className="block text-sm font-medium text-gray-700 mb-2">
           Your Review *
         </label>
         <textarea
-          id="comment"
+          id="review-comment"
           value={formData.comment}
           onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-          placeholder="Share your thoughts about this product..."
-          rows={5}
-          minLength={10}
+          placeholder="Share your thoughts about this product (minimum 10 characters)"
+          className="input min-h-[120px] resize-y"
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          disabled={isLoading}
+          minLength={10}
+          maxLength={1000}
         />
-        <p className="mt-1 text-sm text-gray-500">{formData.comment.length} / 10 minimum</p>
+        <p className="text-xs text-gray-500 mt-1">
+          {formData.comment.length}/1000 characters
+        </p>
       </div>
 
+      {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3">
-          <p className="text-sm text-red-800">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+          {error}
         </div>
       )}
 
-      <Button type="submit" size="lg" isLoading={isLoading} className="w-full">
-        Submit Review
+      {/* Submit Button */}
+      <Button type="submit" size="lg" disabled={isLoading} className="w-full">
+        {isLoading ? 'Submitting...' : 'Submit Review'}
       </Button>
     </form>
   );

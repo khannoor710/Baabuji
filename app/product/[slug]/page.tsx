@@ -6,6 +6,8 @@ import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/product-card';
 import { AddToCartButton } from '@/components/add-to-cart-button';
+import { ReviewForm } from '@/components/review-form';
+import { ReviewList } from '@/components/review-list';
 import { prisma } from '@/lib/prisma';
 import { formatPrice, calculateDiscountPercentage } from '@/lib/utils';
 import type { Metadata } from 'next';
@@ -83,6 +85,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     },
   };
 }
+
+// Enable ISR - revalidate every hour for better performance
+export const revalidate = 3600;
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
@@ -323,6 +328,41 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             </div>
           </div>
+
+          {/* Customer Reviews Section */}
+          <section className="mt-20 pt-12 border-t">
+            <h2 className="font-serif text-3xl font-bold text-gray-900 mb-8">
+              Customer Reviews
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {/* Review Form */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Write a Review</h3>
+                <ReviewForm 
+                  productId={product.id} 
+                  productName={product.name}
+                  onSuccess={() => {
+                    // Refresh the page to show new review
+                    if (typeof window !== 'undefined') {
+                      window.location.reload();
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Reviews List */}
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-6">All Reviews</h3>
+                <ReviewList 
+                  productId={product.id} 
+                  initialReviews={product.reviews.map(r => ({
+                    ...r,
+                    createdAt: r.createdAt.toISOString()
+                  }))}
+                />
+              </div>
+            </div>
+          </section>
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (

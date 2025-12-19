@@ -1,10 +1,10 @@
 'use client';
 
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore, CartItem as CartItemType } from '@/lib/store/cart-store';
-import { useState } from 'react';
 
 interface CartItemProps {
   item: CartItemType;
@@ -214,3 +214,13 @@ export function CartItem({ item, variant = 'drawer' }: CartItemProps) {
     </div>
   );
 }
+
+// Memoize to prevent unnecessary re-renders when other cart items change
+export default React.memo(CartItem, (prevProps, nextProps) => {
+  // Only re-render if the item itself changes
+  return (
+    prevProps.item.id === nextProps.item.id &&
+    prevProps.item.quantity === nextProps.item.quantity &&
+    prevProps.variant === nextProps.variant
+  );
+});
