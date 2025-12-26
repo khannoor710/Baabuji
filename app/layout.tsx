@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '@/components/auth-provider';
 import { cn } from '@/lib/utils';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -40,8 +41,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(inter.variable, playfair.variable, 'font-sans antialiased')}>
-        {children}
-        <Toaster position="top-right" />
+        <AuthProvider>
+          {children}
+          <Toaster position="top-right" />
+        </AuthProvider>
       </body>
     </html>
   );
