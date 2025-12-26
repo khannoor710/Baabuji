@@ -341,12 +341,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <ReviewForm 
                   productId={product.id} 
                   productName={product.name}
-                  onSuccess={() => {
-                    // Refresh the page to show new review
-                    if (typeof window !== 'undefined') {
-                      window.location.reload();
-                    }
-                  }}
                 />
               </div>
 

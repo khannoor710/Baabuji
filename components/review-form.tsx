@@ -57,9 +57,15 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
       setSuccess(true);
       setFormData({ rating: 5, title: '', comment: '' });
       
+      // Refresh the page after a short delay to show the new review
       if (onSuccess) {
         setTimeout(() => {
           onSuccess();
+        }, 1500);
+      } else {
+        // Default behavior: reload page to show new review
+        setTimeout(() => {
+          window.location.reload();
         }, 1500);
       }
     } catch (err: any) {
